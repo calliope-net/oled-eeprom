@@ -1,7 +1,7 @@
 
 //% color=#0000BF icon="\uf108" block="OLED EEPROM" weight=20
 namespace oledeeprom
-/* 230907
+/* 230908
 Erweiterung zum Programmieren des EEPROM für:
 https://github.com/calliope-net/oled-16x8
 Diese Erweiterung kann gelöscht werden, wenn der EEPROM einmal programmiert ist.
@@ -20,82 +20,15 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     export enum eADDR_LOG { LOG_Qwiic = 0x2A, LOG_Qwiic_x29 = 0x29 }
 
 
-
-    // kann aus den Arrays die Pixel (8 Byte für 1 Zeichen) holen
-    // wenn kein EEPROM vorhanden ist, der die Pixel enthält
-    export function getPixel8Byte(pCharCode: number) {
-        let charCodeArray: string[]
-        switch (pCharCode & 0xF0) {
-            case 0x00: { charCodeArray = extendedCharacters; break; }
-            case 0x20: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
-            case 0x30: { charCodeArray = basicFontx30; break; }
-            case 0x40: { charCodeArray = basicFontx40; break; }
-            case 0x50: { charCodeArray = basicFontx50; break; }
-            case 0x60: { charCodeArray = basicFontx60; break; }
-            case 0x70: { charCodeArray = basicFontx70; break; }
-        }
-        let bu = Buffer.create(128)
-
-        for (let i = 0; i <= 15; i++) {
-            for (let j = 0; j <= 7; j++) {
-                bu.setUint8(i * 8 + j, charCodeArray[i].charCodeAt(j))
-            }
-        }
-
-        let offset = (pCharCode & 0x0F) * 8 // max 15*8=120
-
-        return bu.slice(offset, 8)
-    }
-
-
-
-    // ========== group="EEPROM aus Char-Array im Code brennen"
-
-    export enum eCharCodeArray {
-        //% block="x00_x0F extendedCharacters"
-        x00_x0F,
-        x20_x2F, x30_x3F, x40_x4F, x50_x5F, x60_x6F, x70_x7F
-    }
-
-    //% group="EEPROM aus Char-Array im Code brennen"
-    //% block="i2c %pADDR auf Page %page <- 128 Byte=16 Zeichen-Codes %pzArray schreiben"
-    //% pADDR.shadow="oledeeprom_eADDR"
-    // page.shadow="oledeeprom_pageAdr"
-    //% page.min=0 page.max=511 page.defl=496
-    //% inlineInputMode=inline
-    export function writeEEPROM(pADDR: number, page: number, pCharCodeArray: eCharCodeArray) {
-        let charCodeArray: string[] = []
-        switch (pCharCodeArray) {
-            case eCharCodeArray.x00_x0F: { charCodeArray = extendedCharacters; break; }
-            case eCharCodeArray.x20_x2F: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
-            case eCharCodeArray.x30_x3F: { charCodeArray = basicFontx30; break; }
-            case eCharCodeArray.x40_x4F: { charCodeArray = basicFontx40; break; }
-            case eCharCodeArray.x50_x5F: { charCodeArray = basicFontx50; break; }
-            case eCharCodeArray.x60_x6F: { charCodeArray = basicFontx60; break; }
-            case eCharCodeArray.x70_x7F: { charCodeArray = basicFontx70; break; }
-        }
-        if (charCodeArray.length == 16) {
-            let bu = Buffer.create(130) // 130
-            bu.setNumber(NumberFormat.UInt16BE, 0, page * 128)
-            for (let i = 0; i <= 15; i++) {
-                for (let j = 0; j <= 7; j++) {
-                    bu.setUint8(2 + i * 8 + j, charCodeArray[i].charCodeAt(j))
-                }
-            }
-            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR, bu)
-            control.waitMicros(50000) // 50ms
-        }
-    }
-
-    // ========== //% group="EEPROM Adresse 0000-FFFF in Page-Nummer 0-511 umrechnen"
-
-    //% group="EEPROM Adresse 0000-FFFF in Page-Nummer 0-511 umrechnen"
-    //% blockId=oledeeprom_pageAdr
-    //% block="Page %x4 %x3"
-    //% x4.defl=oledeeprom.eH4.F000
-    //% x3.defl=oledeeprom.eH3.x800
-    export function pageAdr(x4: eH4, x3: eH3) { return (x4 + x3) / 128 }
-
+    // ========== group="EEPROM Adresse 0000-FFFF in Page 0-511 umrechnen (512 Pages je 128 Byte)"
+    /* 
+        // group="EEPROM Adresse 0000-FFFF in Page 0-511 umrechnen (512 Pages je 128 Byte)"
+        // blockId=oledeeprom_pageAdr
+        // block="%x4 %x3"
+        //% x4.defl=oledeeprom.eH4.F000
+        //% x3.defl=oledeeprom.eH3.x800
+        //export function pageAdr(x4: eH4, x3: eH3) { return (x4 + x3) / 128 }
+     */
     export enum eH3 {
         //% block="000"
         x000 = 0x000,
@@ -164,6 +97,75 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         A000 = 0xA000, B000 = 0xB000, C000 = 0xC000, D000 = 0xD000, E000 = 0xE000, F000 = 0xF000
     }
 
+
+    // ========== group="EEPROM aus Char-Array im Code (7 * 128 Byte/16 Zeichen) programmieren"
+
+    /* export enum eCharCodeArray {
+        //% block="00-0F ÄÖÜäöüß€°"
+        x00_x0F,
+        //% block="20-2F Satzzeichen"
+        x20_x2F,
+        //% block="30-3F Ziffern"
+        x30_x3F,
+        //% block="40-4F A .. O"
+        x40_x4F,
+        //% block="50-5F P .. _"
+        x50_x5F,
+        //% block="60-6F a .. o"
+        x60_x6F,
+        //% block="70-7F p .. ~"
+        x70_x7F
+    } */
+
+    export enum eEEPROM_Startadresse { F800 = 0xF800, FC00 = 0xFC00, F000 = 0xF000, F400 = 0xF400 }
+
+
+    //% group="EEPROM aus Char-Array im Code (7 * 128 Byte) programmieren"
+    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus den Arrays im Code programmieren"
+    //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    export function burnArrays(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse) {
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x000, extendedCharacters)
+        //writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x080, basicFontx10)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x100, basicFontx20)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x180, basicFontx30)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x200, basicFontx40)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x280, basicFontx50)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x300, basicFontx60)
+        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x380, basicFontx70)
+    }
+
+    //% group="EEPROM aus Char-Array im Code (7 * 128 Byte) programmieren"
+    //% block="i2c %pADDR ab %x4 %x3 - 16 Zeichen %pCharCodeArray 128 Byte programmieren"
+    //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    //% x4.defl=oledeeprom.eH4.F000
+    //% x3.defl=oledeeprom.eH3.x800
+    // page.shadow="oledeeprom_pageAdr"
+    // page.min=0 page.max=511 page.defl=496
+    //% inlineInputMode=inline
+     function writeEEPROM(pADDR_EEPROM: number, pStartadresse:number, pCharCodeArray: string[]) {
+       /*  let charCodeArray: string[] = []
+        switch (pCharCodeArray) {
+            case eCharCodeArray.x00_x0F: { charCodeArray = extendedCharacters; break; }
+            case eCharCodeArray.x20_x2F: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
+            case eCharCodeArray.x30_x3F: { charCodeArray = basicFontx30; break; }
+            case eCharCodeArray.x40_x4F: { charCodeArray = basicFontx40; break; }
+            case eCharCodeArray.x50_x5F: { charCodeArray = basicFontx50; break; }
+            case eCharCodeArray.x60_x6F: { charCodeArray = basicFontx60; break; }
+            case eCharCodeArray.x70_x7F: { charCodeArray = basicFontx70; break; }
+        } */
+         if (pCharCodeArray.length == 16) {
+            let bu = Buffer.create(130) // 130
+             bu.setNumber(NumberFormat.UInt16BE, 0, pStartadresse)//page * 128)
+            for (let i = 0; i <= 15; i++) {
+                for (let j = 0; j <= 7; j++) {
+                    bu.setUint8(2 + i * 8 + j, pCharCodeArray[i].charCodeAt(j))
+                }
+            }
+            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+            control.waitMicros(50000) // 50ms
+        }
+    }
+
     const basicFontx20: string[] = [
         "\x00\x00\x00\x00\x00\x00\x00\x00", // " "
         "\x00\x00\x5F\x00\x00\x00\x00\x00", // "!"
@@ -201,8 +203,8 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         "\x00\x02\x01\x51\x09\x06\x00\x00", // "?"
     ]
     const basicFontx40: string[] = [
-        "\x00\x32\x49\x79\x41\x3E\x00\x00", // "@" 32
-        "\x00\x7E\x09\x09\x09\x7E\x00\x00", // "A"   33
+        "\x00\x32\x49\x79\x41\x3E\x00\x00", // "@""
+        "\x00\x7E\x09\x09\x09\x7E\x00\x00", // "A"
         "\x00\x7F\x49\x49\x49\x36\x00\x00", // "B"
         "\x00\x3E\x41\x41\x41\x22\x00\x00", // "C"
         "\x00\x7F\x41\x41\x22\x1C\x00\x00", // "D"
@@ -269,7 +271,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         "\x00\x08\x36\x41\x00\x00\x00\x00", // "{"
         "\x00\x00\x7F\x00\x00\x00\x00\x00", // "|"
         "\x00\x41\x36\x08\x00\x00\x00\x00", // "}"
-        "\x00\x02\x01\x01\x02\x01\x00\x00", // "~" 126
+        "\x00\x02\x01\x01\x02\x01\x00\x00", // "~"
         "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"  // 127
     ]
 
@@ -295,18 +297,58 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     ];
 
 
+    // ========== group="EEPROM aus Datei auf Speicherkarte programmieren"
+
     // ========== SparkFun Qwiic OpenLog, Zeichengenerator von Speicherkarte lesen 2048 Byte .BIN Datei
+
+    export enum ePage128 {
+        //% block="128"
+        x080 = 0x080,
+        //% block="256"
+        x100 = 0x100,
+        //% block="384"
+        x180 = 0x180,
+        //% block="512"
+        x200 = 0x200,
+        //% block="640"
+        x280 = 0x280,
+        //% block="768"
+        x300 = 0x300,
+        //% block="896"
+        x380 = 0x380,
+        //% block="1024"
+        x400 = 0x400,
+        //% block="1152"
+        x480 = 0x480,
+        //% block="1280"
+        x500 = 0x500,
+        //% block="1408"
+        x580 = 0x580,
+        //% block="1536"
+        x600 = 0x600,
+        //% block="1664"
+        x680 = 0x680,
+        //% block="1792"
+        x700 = 0x700,
+        //% block="1920"
+        x780 = 0x780,
+        //% block="2048"
+        x800 = 0x800,
+    }
 
     export enum eWriteStringReadString { readFile = 9, list = 14, } // Qwiic OpenLog Register Nummern
 
-    //% group="EEPROM aus Datei auf Speicherkarte brennen"
-    //% block="i2c %pADDR auf Page %pageEEPROM von %pADDR_LOG Dateiname %pFilename %pAnzahlPages128 * 128 Byte schreiben"
+    //% group="EEPROM aus Datei auf Speicherkarte (1024 Byte=128 Zeichen) programmieren"
+    //% block="i2c %pADDR ab %x4 %x3 - von %pADDR_LOG %pFilename %pAnzahlBytes Byte programmieren"
+    //  block="i2c %pADDR ab %pageEEPROM von %pADDR_LOG Dateiname %pFilename %pAnzahlPages128 * 128 Byte schreiben"
+    //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
     //% pFilename.defl="BM505.BIN"
-    //% pageEEPROM.min=0 pageEEPROM.max=511 pageEEPROM.defl=480
-    //% pAnzahlPages128.min=1 pAnzahlPages128.max=16 pAnzahlPages128.defl=16
+    // x4.defl=oledeeprom.eH4.F000
+    // x3.defl=oledeeprom.eH3.x000
+    //% pAnzahlBytes.defl=oledeeprom.ePage128.x400
     //% inlineInputMode=inline
-    export function burnFile(pADDR_EEPROM: eADDR_EEPROM, pageEEPROM: number,
-        pADDR_LOG: eADDR_LOG, pFilename: string, pAnzahlPages128: number) {
+    export function burnFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
+        pADDR_LOG: eADDR_LOG, pFilename: string, pAnzahlBytes: ePage128) {
 
         let filenameBuffer = Buffer.fromUTF8(pFilename)
         let logBuffer = Buffer.create(1 + filenameBuffer.length)
@@ -338,7 +380,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
             control.waitMicros(50000) // 50ms
 
             let eepromBuffer = Buffer.create(130)
-            for (let page = 0; page < pAnzahlPages128; page++) {
+            for (let page = 0; page < pAnzahlBytes / 128; page++) { // (let page = 0; page < pAnzahlPages128; page++)
 
                 // 128 Byte von Speicherkarte lesen als 4 * 32 Byte
                 // Qwiic OpenLog überträgt nur 32 Byte in einem Buffer
@@ -361,7 +403,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
                 control.waitMicros(5000) // 5ms
 
                 // EEPROM Buffer 2 Byte startAdrEEPROM
-                eepromBuffer.setNumber(NumberFormat.UInt16BE, 0, pageEEPROM * 128 + page * 128)
+                eepromBuffer.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + page * 128)//pageEEPROM * 128 + page * 128)
                 /* 
                 if (page >= 0 && page <= 7) {
                     oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, page, 0, 7, oledssd1315.eAlign.left,
@@ -385,12 +427,40 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     }
 
 
+
+    // kann aus den Arrays die Pixel (8 Byte für 1 Zeichen) holen
+    // wenn kein EEPROM vorhanden ist, der die Pixel enthält
+    export function getPixel8Byte(pCharCode: number) {
+        let charCodeArray: string[]
+        switch (pCharCode & 0xF0) {
+            case 0x00: { charCodeArray = extendedCharacters; break; }
+            case 0x20: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
+            case 0x30: { charCodeArray = basicFontx30; break; }
+            case 0x40: { charCodeArray = basicFontx40; break; }
+            case 0x50: { charCodeArray = basicFontx50; break; }
+            case 0x60: { charCodeArray = basicFontx60; break; }
+            case 0x70: { charCodeArray = basicFontx70; break; }
+        }
+        let bu = Buffer.create(128)
+
+        for (let i = 0; i <= 15; i++) {
+            for (let j = 0; j <= 7; j++) {
+                bu.setUint8(i * 8 + j, charCodeArray[i].charCodeAt(j))
+            }
+        }
+
+        let offset = (pCharCode & 0x0F) * 8 // max 15*8=120
+
+        return bu.slice(offset, 8)
+    }
+
+
     // ========== group="i2c Adressen"
 
-    //% blockId=oledeeprom_eADDR
+    //% blockId=oledeeprom_eADDR_EEPROM
     //% group="i2c Adressen"
     //% block="%pADDR" weight=4
-    export function oledeeprom_eADDR(pADDR: eADDR_EEPROM): number { return pADDR }
+    export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
 
     //% group="i2c Adressen"
     //% block="Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)" weight=2
