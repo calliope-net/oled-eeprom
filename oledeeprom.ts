@@ -1,7 +1,7 @@
 
 //% color=#0000BF icon="\uf108" block="OLED EEPROM" weight=20
 namespace oledeeprom
-/* 230908
+/* 230908 https://github.com/calliope-net/oled-eeprom
 Erweiterung zum Programmieren des EEPROM für:
 https://github.com/calliope-net/oled-16x8
 Diese Erweiterung kann gelöscht werden, wenn der EEPROM einmal programmiert ist.
@@ -191,7 +191,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     // ========== SparkFun Qwiic OpenLog, Zeichengenerator von Speicherkarte lesen 2048 Byte .BIN Datei
 
 
-    //% group="Datei auf Speicherkarte kopieren und mit SparkFun Qwiic OpenLog einlesen"
+    //% group="Datei auf Speicherkarte kopieren und in SparkFun Qwiic OpenLog stecken"
     //% block="https://github.com/calliope-net/oled-eeprom/blob/master/BM505.BIN"
     export function link() { return "https://github.com/calliope-net/oled-eeprom/blob/master/BM505.BIN" }
 
