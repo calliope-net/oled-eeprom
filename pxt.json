@@ -3,25 +3,18 @@
     "version": "0.0.0",
     "description": "",
     "dependencies": {
-        "core": "*",
-        "radio": "*",
-        "microphone": "*"
+        "core": "*"
     },
     "files": [
         "README.md",
         "main.blocks",
         "main.ts"
     ],
-    "testFiles": [
-        "test.ts"
-    ],
-    "public": true,
     "targetVersions": {
-        "target": "6.0.18",
-        "targetId": "microbit"
+        "target": "4.0.29",
+        "targetId": "calliopemini"
     },
     "supportedTargets": [
-        "microbit"
-    ],
-    "preferredEditor": "blocksprj"
+        "calliopemini"
+    ]
 }
