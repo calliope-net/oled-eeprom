@@ -9,7 +9,8 @@
         "README.md",
         "main.blocks",
         "main.ts",
-        "oledeeprom.ts"
+        "oledeeprom.ts",
+        "oledeeprom-enums.ts"
     ],
     "targetVersions": {
         "target": "4.0.29",

@@ -19,110 +19,17 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     export enum eADDR_EEPROM { EEPROM = 0x50 }
     export enum eADDR_LOG { LOG_Qwiic = 0x2A, LOG_Qwiic_x29 = 0x29 }
 
+    export enum eEEPROM_Startadresse { F800 = 0xF800, FC00 = 0xFC00, F000 = 0xF000, F400 = 0xF400 }
 
-    // ========== group="EEPROM Adresse 0000-FFFF in Page 0-511 umrechnen (512 Pages je 128 Byte)"
-    /* 
-        // group="EEPROM Adresse 0000-FFFF in Page 0-511 umrechnen (512 Pages je 128 Byte)"
-        // blockId=oledeeprom_pageAdr
-        // block="%x4 %x3"
-        //% x4.defl=oledeeprom.eH4.F000
-        //% x3.defl=oledeeprom.eH3.x800
-        //export function pageAdr(x4: eH4, x3: eH3) { return (x4 + x3) / 128 }
-     */
-    export enum eH3 {
-        //% block="000"
-        x000 = 0x000,
-        //% block="080"
-        x080 = 0x080,
-        //% block="100"
-        x100 = 0x100,
-        //% block="180"
-        x180 = 0x180,
-        //% block="200"
-        x200 = 0x200,
-        //% block="280"
-        x280 = 0x280,
-        //% block="300"
-        x300 = 0x300,
-        //% block="380"
-        x380 = 0x380,
-        //% block="400"
-        x400 = 0x400,
-        //% block="480"
-        x480 = 0x480,
-        //% block="500"
-        x500 = 0x500,
-        //% block="580"
-        x580 = 0x580,
-        //% block="600"
-        x600 = 0x600,
-        //% block="680"
-        x680 = 0x680,
-        //% block="700"
-        x700 = 0x700,
-        //% block="780"
-        x780 = 0x780,
-        //% block="800"
-        x800 = 0x800,
-        //% block="880"
-        x880 = 0x880,
-        //% block="900"
-        x900 = 0x900,
-        //% block="980"
-        x980 = 0x980,
-        A00 = 0xA00, A80 = 0xA80, B00 = 0xB00, B80 = 0xB80,
-        C00 = 0xC00, C80 = 0xC80, D00 = 0xD00, D80 = 0xD80, E00 = 0xE00, E80 = 0xE80, F00 = 0xF00, F80 = 0xF80
-    }
-    export enum eH4 {
-        //% block="0000"
-        x0000 = 0x0000,
-        //% block="1000"
-        x1000 = 0x1000,
-        //% block="2000"
-        x2000 = 0x2000,
-        //% block="3000"
-        x3000 = 0x3000,
-        //% block="4000"
-        x4000 = 0x4000,
-        //% block="5000"
-        x5000 = 0x5000,
-        //% block="6000"
-        x6000 = 0x6000,
-        //% block="7000"
-        x7000 = 0x7000,
-        //% block="8000"
-        x8000 = 0x8000,
-        //% block="9000"
-        x9000 = 0x9000,
-        A000 = 0xA000, B000 = 0xB000, C000 = 0xC000, D000 = 0xD000, E000 = 0xE000, F000 = 0xF000
-    }
 
 
     // ========== group="EEPROM aus Char-Array im Code (7 * 128 Byte/16 Zeichen) programmieren"
-
-    /* export enum eCharCodeArray {
-        //% block="00-0F ÄÖÜäöüß€°"
-        x00_x0F,
-        //% block="20-2F Satzzeichen"
-        x20_x2F,
-        //% block="30-3F Ziffern"
-        x30_x3F,
-        //% block="40-4F A .. O"
-        x40_x4F,
-        //% block="50-5F P .. _"
-        x50_x5F,
-        //% block="60-6F a .. o"
-        x60_x6F,
-        //% block="70-7F p .. ~"
-        x70_x7F
-    } */
-
-    export enum eEEPROM_Startadresse { F800 = 0xF800, FC00 = 0xFC00, F000 = 0xF000, F400 = 0xF400 }
 
 
     //% group="EEPROM aus Char-Array im Code (7 * 128 Byte) programmieren"
     //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus den Arrays im Code programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F800
     export function burnArrays(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse) {
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x000, extendedCharacters)
         //writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x080, basicFontx10)
@@ -134,28 +41,10 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x380, basicFontx70)
     }
 
-    //% group="EEPROM aus Char-Array im Code (7 * 128 Byte) programmieren"
-    //% block="i2c %pADDR ab %x4 %x3 - 16 Zeichen %pCharCodeArray 128 Byte programmieren"
-    //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
-    //% x4.defl=oledeeprom.eH4.F000
-    //% x3.defl=oledeeprom.eH3.x800
-    // page.shadow="oledeeprom_pageAdr"
-    // page.min=0 page.max=511 page.defl=496
-    //% inlineInputMode=inline
-     function writeEEPROM(pADDR_EEPROM: number, pStartadresse:number, pCharCodeArray: string[]) {
-       /*  let charCodeArray: string[] = []
-        switch (pCharCodeArray) {
-            case eCharCodeArray.x00_x0F: { charCodeArray = extendedCharacters; break; }
-            case eCharCodeArray.x20_x2F: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
-            case eCharCodeArray.x30_x3F: { charCodeArray = basicFontx30; break; }
-            case eCharCodeArray.x40_x4F: { charCodeArray = basicFontx40; break; }
-            case eCharCodeArray.x50_x5F: { charCodeArray = basicFontx50; break; }
-            case eCharCodeArray.x60_x6F: { charCodeArray = basicFontx60; break; }
-            case eCharCodeArray.x70_x7F: { charCodeArray = basicFontx70; break; }
-        } */
-         if (pCharCodeArray.length == 16) {
+    function writeEEPROM(pADDR_EEPROM: number, pStartadresse: number, pCharCodeArray: string[]) {
+        if (pCharCodeArray.length == 16) {
             let bu = Buffer.create(130) // 130
-             bu.setNumber(NumberFormat.UInt16BE, 0, pStartadresse)//page * 128)
+            bu.setNumber(NumberFormat.UInt16BE, 0, pStartadresse)//page * 128)
             for (let i = 0; i <= 15; i++) {
                 for (let j = 0; j <= 7; j++) {
                     bu.setUint8(2 + i * 8 + j, pCharCodeArray[i].charCodeAt(j))
@@ -301,6 +190,13 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
     // ========== SparkFun Qwiic OpenLog, Zeichengenerator von Speicherkarte lesen 2048 Byte .BIN Datei
 
+
+    //% group="Datei auf Speicherkarte kopieren und mit SparkFun Qwiic OpenLog einlesen"
+    //% block="https://github.com/calliope-net/oled-eeprom/blob/master/BM505.BIN"
+    export function link() { return "https://github.com/calliope-net/oled-eeprom/blob/master/BM505.BIN" }
+
+
+
     export enum ePage128 {
         //% block="128"
         x080 = 0x080,
@@ -339,13 +235,11 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     export enum eWriteStringReadString { readFile = 9, list = 14, } // Qwiic OpenLog Register Nummern
 
     //% group="EEPROM aus Datei auf Speicherkarte (1024 Byte=128 Zeichen) programmieren"
-    //% block="i2c %pADDR ab %x4 %x3 - von %pADDR_LOG %pFilename %pAnzahlBytes Byte programmieren"
-    //  block="i2c %pADDR ab %pageEEPROM von %pADDR_LOG Dateiname %pFilename %pAnzahlPages128 * 128 Byte schreiben"
+    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus Datei i2c %pADDR_LOG %pFilename %pAnzahlBytes Byte programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F000
     //% pFilename.defl="BM505.BIN"
-    // x4.defl=oledeeprom.eH4.F000
-    // x3.defl=oledeeprom.eH3.x000
-    //% pAnzahlBytes.defl=oledeeprom.ePage128.x400
+    //% pAnzahlBytes.defl=oledeeprom.ePage128.x800
     //% inlineInputMode=inline
     export function burnFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
         pADDR_LOG: eADDR_LOG, pFilename: string, pAnzahlBytes: ePage128) {
@@ -428,6 +322,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
 
 
+
     // kann aus den Arrays die Pixel (8 Byte für 1 Zeichen) holen
     // wenn kein EEPROM vorhanden ist, der die Pixel enthält
     export function getPixel8Byte(pCharCode: number) {
@@ -457,7 +352,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
     // ========== group="i2c Adressen"
 
-    //% blockId=oledeeprom_eADDR_EEPROM
+    //% blockId=oledeeprom_eADDR_EEPROM blockHidden=true
     //% group="i2c Adressen"
     //% block="%pADDR" weight=4
     export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
