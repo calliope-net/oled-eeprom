@@ -8,7 +8,8 @@
     "files": [
         "README.md",
         "main.blocks",
-        "main.ts"
+        "main.ts",
+        "oledeeprom.ts"
     ],
     "targetVersions": {
         "target": "4.0.29",
