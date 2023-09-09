@@ -55,7 +55,7 @@ Die Datenmenge für 96 ASCII-Zeichen lässt sich zwar im Programmcode unterbring
 Calliope ist abgestürzt, wenn Bluetooth aktiviert war. Mit dem EEPROM wird kein Speicherplatz vom Calliope mehr 
 belegt, weil die 8 Byte für jedes Zeichen direkt aus dem EEPROM gelesen werden.
 
-So können mehrere Zeichesätze für Querformat 16 Zeilen x 8 Zeichen und Hochformat 8 Zeilen x 16 Zeichen 
+So können mehrere Zeichensätze für Querformat 16 Zeilen x 8 Zeichen und Hochformat 8 Zeilen x 16 Zeichen 
 an verschiedenen Adressen im EEPROM gespeichert sein. Wenn ein Zeichensatz 2KB belegt und der EEPROM 64KB
 Speicherplatz hat, lassen sich auch noch Bilder unterbringen (und direkt auf das Display kopieren).
 
