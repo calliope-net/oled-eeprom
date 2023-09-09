@@ -26,12 +26,12 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     // ========== group="EEPROM aus Char-Array im Code (7 * 128 Byte/16 Zeichen) programmieren"
 
 
-    //% group="EEPROM aus Char-Array im Code (7 * 128 Byte) programmieren"
-    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus den Arrays im Code programmieren"
+    //% group="EEPROM aus String-Array im Code (Zeichencode 0x20-0x7F + Umlaute) programmieren"
+    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz 0x20-0x7F + Umlaute programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
     //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F800
     export function burnArrays(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse) {
-        writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x000, extendedCharacters)
+        //writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x000, extendedCharacters)
         //writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x080, basicFontx10)
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x100, basicFontx20)
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x180, basicFontx30)
@@ -39,6 +39,22 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x280, basicFontx50)
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x300, basicFontx60)
         writeEEPROM(pADDR_EEPROM, pEEPROM_Startadresse + 0x380, basicFontx70)
+
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "Ä", Buffer.fromUTF8(extendedCharacters1[0])) // "Ä" 0xC4
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "Ö", Buffer.fromUTF8(extendedCharacters1[1])) // "Ö" 0xD6
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "Ü", Buffer.fromUTF8(extendedCharacters1[2])) // "Ü" 0xDC
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "ä", Buffer.fromUTF8(extendedCharacters1[3])) // "ä" 0xE4
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "ö", Buffer.fromUTF8(extendedCharacters1[4])) // "ö" 0xF6
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "ü", Buffer.fromUTF8(extendedCharacters1[5])) // "ü" 0xFC
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "ß", Buffer.fromUTF8(extendedCharacters1[6])) // "ß" 0xDF
+        // "€".charCodeAt(0) :              Calliope 0xAC; Simulator: 0x20AC   U+20AC ist Unicode 16-Bit
+        // Buffer.fromUTF8("€").toHex() :   Calliope 0xAC; Simulator: 0xE282AC ist 3-Byte-UTF8, das nur 8-Bit Werte kennt
+        // Windows 1252 : 0x80
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "€", Buffer.fromUTF8(extendedCharacters1[7])) // "€" 0xAC
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, "°", Buffer.fromUTF8(extendedCharacters1[8])) // "°" 0xB0
+
+        prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, String.fromCharCode(0xA0), Buffer.fromUTF8(basicFontx20[0])) // NBSP
+        //prog8Byte(pADDR_EEPROM, pEEPROM_Startadresse, 0xAC, Buffer.fromUTF8(extendedCharacters1[7])) // "€"
     }
 
     function writeEEPROM(pADDR_EEPROM: number, pStartadresse: number, pCharCodeArray: string[]) {
@@ -46,9 +62,11 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
             let bu = Buffer.create(130) // 130
             bu.setNumber(NumberFormat.UInt16BE, 0, pStartadresse)//page * 128)
             for (let i = 0; i <= 15; i++) {
+                bu.write(2 + i * 8, Buffer.fromUTF8(pCharCodeArray[i])) // liest alle 8 Zeichen im String ein
+                /* 
                 for (let j = 0; j <= 7; j++) {
                     bu.setUint8(2 + i * 8 + j, pCharCodeArray[i].charCodeAt(j))
-                }
+                } */
             }
             oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
             control.waitMicros(50000) // 50ms
@@ -78,8 +96,20 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
         control.waitMicros(50000) // 50ms
     }
-   
-   
+
+    function prog8Byte(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse, pChar: string, pBuffer: Buffer) {
+        if (pChar.length == 1) {
+
+            let bu = Buffer.create(10)
+            bu.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + (pChar.charCodeAt(0) & 0xFF) * 8)
+            bu.write(2, pBuffer)
+            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+            control.waitMicros(50000) // 50ms
+        }
+    }
+
+
+
     const basicFontx20: string[] = [
         "\x00\x00\x00\x00\x00\x00\x00\x00", // " "
         "\x00\x00\x5F\x00\x00\x00\x00\x00", // "!"
@@ -191,14 +221,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
     //const basicFont: string[] = [];
 
-    const extendedCharacters: string[] = [
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
-        "\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF",
+    const extendedCharacters1: string[] = [
         "\x00\x7D\x0A\x09\x0A\x7D\x00\x00", // "Ä"
         "\x00\x3D\x42\x41\x42\x3D\x00\x00", // "Ö"
         "\x00\x3D\x40\x40\x40\x3D\x00\x00", // "Ü"
@@ -354,7 +377,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     export function getPixel8Byte(pCharCode: number) {
         let charCodeArray: string[]
         switch (pCharCode & 0xF0) {
-            case 0x00: { charCodeArray = extendedCharacters; break; }
+            //case 0x00: { charCodeArray = extendedCharacters; break; }
             case 0x20: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
             case 0x30: { charCodeArray = basicFontx30; break; }
             case 0x40: { charCodeArray = basicFontx40; break; }
