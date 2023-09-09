@@ -66,7 +66,7 @@ Speicherplatz hat, lassen sich auch noch Bilder unterbringen (und direkt auf das
 Dazu muss nur der EEPROM an i2c angeschlossen sein. Die letzten 2KB F800-FFFF werden mit den ASCII Zeichen beschrieben,
 die im Code in String-Arrays gespeichert sind. Dabei bleiben viele Speicherbereiche frei, die später mit Sonderzeichen
 belegt werden können. Die bekannten Umlaute und Sonderzeichen ÄÖÜäöüß€° werden entsprechend ihres Calliope-Zeichencodes
-über die freien Stellen verteilt.
+über die freien Stellen verteilt. (Calliope hat für nicht-ASCII Zeichen andere Zeichencodes als der Simulator.)
 
 #### 2. EEPROM aus Datei auf Speicherkarte programmieren
 
