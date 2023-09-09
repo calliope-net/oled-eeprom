@@ -33,9 +33,10 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 ### Beschreibung der Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays'
 
 > Die Erweiterung **calliope-net/bit** wird automatisch mit geladen.
+> Die Erweiterung **calliope-net/oled-16x8** wird zum Programmieren des EEPROM nicht gebraucht.
 
-> Wenn der EEPROM einmal programmiert ist, kann diese Erweiterung entfernt werden.
-> Das OLED Display benötigt nur den programmierten EEPROM.
+> Wenn der EEPROM einmal programmiert ist, kann die Erweiterung **calliope-net/oled-eeprom** entfernt werden.
+> Das OLED Display benötigt nur den programmierten EEPROM am i2c-Bus und die Erweiterung **calliope-net/oled-16x8**.
 
 Das OLED Display kann nur Pixel anzeigen. Zeichen müssen als 'Bilder' mit 8x8 Punkten dargestellt werden.
 Für 1 Zeichen werden 8 Byte im Zeichengenerator belegt. Für 128 ASCII Zeichen sind das 128*8 = 1024 Byte.
