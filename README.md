@@ -1,6 +1,9 @@
 
 > Diese Seite bei [https://calliope-net.github.io/oled-eeprom/](https://calliope-net.github.io/oled-eeprom/) öffnen.
 
+##### OLED neu gedacht - 2 Displays gleichzeitig (2x16x8=265 Zeichen) - EEPROM - 1 Stecker - i2c-Bus
+##### Querformat 16x8 - Hochformat 8x16 - mehrere Zeichensätze je 256 Zeichen - Bilder im EEPROM
+
 ### Calliope Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays':
 
 * [SparkFun Qwiic EEPROM Breakout - 512Kbit](https://www.sparkfun.com/products/18355)
@@ -31,7 +34,22 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 > Wenn der EEPROM einmal programmiert ist, kann diese Erweiterung entfernt werden.
 > Das OLED Display benötigt nur den programmierten EEPROM.
 
-*
+Das OLED Display kann nur Pixel anzeigen. Zeichen müssen als 'Bilder' mit 8x8 Punkten dargestellt werden.
+Für 1 Zeichen werden 8 Byte im Zeichengenerator belegt. Für 128 ASCII Zeichen sind das 128*8 = 1024 Byte.
+Mit einem Zeichencode von 8 Bit sind aber 256 Zeichen möglich. Die Codierungen zwischen 128 und 255 werden 
+z.B. für Umlaute und Sonderzeichen benutzt. Für 256 Zeichen hat der Zeichengenerator eine Größe von 2048 Byte = 2KB.
+
+Diese Datenmenge lässt sich zwar im Programmcode unterbringen, aber der Platz ist bei Calliope begrenzt.
+Calliope ist abgestürzt, wenn Bluetooth aktiviert war. Mit dem EEPROM wird kein Speicherplatz vom Calliope mehr 
+belegt, weil die 8 Byte für jedes Zeichen direkt aus dem EEPROM gelesen werden.
+
+
+
+#### 1. EEPROM aus String-Array im Code (Zeichencode 0x20-0x7F + Umlaute) programmieren
+
+
+2. 
+[Zeichensatz (2048 Byte)](BM505.BIN)
 
 ### Erweiterungen
 
