@@ -56,7 +56,7 @@ Calliope ist abgestürzt, wenn Bluetooth aktiviert war. Mit dem EEPROM wird kein
 belegt, weil die 8 Byte für jedes Zeichen direkt aus dem EEPROM gelesen werden.
 
 Im EEPROM können mehrere Zeichensätze für Querformat 16 Zeilen x 8 Zeichen und Hochformat 8 Zeilen x 16 Zeichen 
-an verschiedenen Adressen im EEPROM gespeichert sein. Wenn ein Zeichensatz 2KB belegt und der EEPROM 64KB
+an verschiedenen Adressen gespeichert sein. Wenn ein Zeichensatz 2KB belegt und der EEPROM 64KB
 Speicherplatz hat, lassen sich auch noch Bilder unterbringen (und direkt auf das Display kopieren).
 
 ### Blöcke
