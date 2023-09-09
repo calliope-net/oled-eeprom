@@ -3,7 +3,8 @@
     "version": "0.0.0",
     "description": "",
     "dependencies": {
-        "core": "*"
+        "core": "*",
+        "bit": "github:calliope-net/bit#v1.0.2"
     },
     "files": [
         "README.md",
