@@ -26,7 +26,6 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 * jetzt hat die Liste den neuen Eintrag **OLED EEPROM** bekommen
 
 ![](blocks.png)
-![](blocks-advanced.png)
 
 ### Beschreibung der Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays'
 
@@ -70,10 +69,14 @@ von Qwiic OpenLog ermittelt und darf 2048 Byte nicht überschreiten. Die tatsäc
 von 128 aufgerundet und ab Anfangsadresse (F000) in den EEPROM programmiert. Eine 1KB Datei (mit 128 Zeichen)
 kann auch ab F400 programmiert werden. Kürzere Dateien belegen weniger EEPROM. Die Datei wird binär kopiert.
 
+Der Block gibt false zurück, wenn die Datei nicht auf der Speicherkarte ist oder die Datei-Größe nicht stimmt.
+
 #### 3. EEPROM 1 Zeichen (8 Byte) programmieren
 
 Schließlich kann ein eigenes Zeichen aus 8 Byte für einen bestimmten Zeichencode programmiert werden.
-Weil es ein EEPROM ist, kann es auch wieder überschrieben werden bis es das richtige Bild ergibt.
+Weil es ein EEPROM ist, kann es auch wieder überschrieben werden, bis es das richtige Bild ergibt.
+
+![](blocks-advanced.png)
 
 ### Erweiterungen
 
