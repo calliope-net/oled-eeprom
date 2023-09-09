@@ -39,17 +39,40 @@ Für 1 Zeichen werden 8 Byte im Zeichengenerator belegt. Für 128 ASCII Zeichen 
 Mit einem Zeichencode von 8 Bit sind aber 256 Zeichen möglich. Die Codierungen zwischen 128 und 255 werden 
 z.B. für Umlaute und Sonderzeichen benutzt. Für 256 Zeichen hat der Zeichengenerator eine Größe von 2048 Byte = 2KB.
 
-Diese Datenmenge lässt sich zwar im Programmcode unterbringen, aber der Platz ist bei Calliope begrenzt.
+Die Datenmenge für 96 ASCCI-Zeichen lässt sich zwar im Programmcode unterbringen, aber der Platz ist bei Calliope begrenzt.
 Calliope ist abgestürzt, wenn Bluetooth aktiviert war. Mit dem EEPROM wird kein Speicherplatz vom Calliope mehr 
 belegt, weil die 8 Byte für jedes Zeichen direkt aus dem EEPROM gelesen werden.
 
+So können mehrere Zeichesätze für Querformat 16 Zeilen x 8 Zeichen und Hochformat 8 Zeilen x 16 Zeichen 
+an verschiedenen Adressen im EEPROM gespeichert sein. Wenn ein Zeichensatz 2KB belegt und der EEPROM 64KB
+Speicherplatz hat, lassen sich auch noch Bilder unterbringen (und direkt auf das Display kopieren).
 
+### Blöcke
 
 #### 1. EEPROM aus String-Array im Code (Zeichencode 0x20-0x7F + Umlaute) programmieren
 
+Dazu muss nur der EEPROM an i2c angeschlossen sein. Die letzten 2KB F800-FFFF werden mit den ASCII Zeichen beschrieben,
+die im Code in String-Arrays gespeichert sind. Dabei bleiben viele Speicherbereiche frei, die später mit Sonderzeichen
+belegt werden können. Die bekannten Umlaute und Sonderzeichen ÄÖÜäöüß€° werden entsprechend ihres Calliope-Zeichencodes
+über die freien Stellen verteilt.
 
-2. 
-[Zeichensatz (2048 Byte)](BM505.BIN)
+#### 2. EEPROM aus Datei auf Speicherkarte programmieren
+
+Wie bekommt man einen großen Zeichensatz auf den EEPROM? Natürlich von der Speicherkarte!
+Dazu muss der EEPROM und Qwiic OpenLog an i2c angeschlossen sein. Auf die Speicherkarte ist die (Binär-) Datei
+zu kopieren. Hier ist der [Zeichensatz vom Z 9001 (2048 Byte)](BM505.BIN). Die Zeichen sind 1/4 gedreht und werden 
+auf dem Display im Hochformat 8 Zeilen x 16 Zeichen richtig angezeigt. Die Zeichen-Codes 0x80-0xFF sind mit
+Pseudo-Grafik Zeichen belegt.
+
+Für die Datei werden standardmäßig die vorletzten 2KB F000-F7FF auf dem EEPROM genutzt. Die Größe der Datei wird
+von Qwiic OpenLog ermittelt und darf 2048 Byte nicht überschreiten. Die tatsächliche Größe wird auf ein Vielfaches
+von 128 aufgerundet und ab Anfangsadresse (F000) in den EEPROM programmiert. Eine 1KB Datei (mit 128 Zeichen)
+kann auch ab F400 programmiert werden. Kürzere Dateien belegen weniger EEPROM. Die Datei wird binär kopiert.
+
+#### 3. EEPROM 1 Zeichen (8 Byte) programmieren
+
+Schließlich kann ein eigenes Zeichen aus 8 Byte für einen bestimmten Zeichencode programmiert werden.
+Weil es ein EEPROM ist, kann es auch wieder überschrieben werden bis es das richtige Bild ergibt.
 
 ### Erweiterungen
 
