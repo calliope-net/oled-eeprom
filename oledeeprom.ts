@@ -55,6 +55,31 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         }
     }
 
+    //% group="EEPROM 1 Zeichen (8 Byte) programmieren" advanced=true
+    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichencode | %pCharCode 8 Byte | %x0 %x1 %x2 %x3 %x4 %x5 %x6 %x7 programmieren"
+    //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F800
+    //% pCharCode.shadow="bit_hex8"
+    //% x0.shadow="bit_hex8" x1.shadow="bit_hex8" x2.shadow="bit_hex8" x3.shadow="bit_hex8"
+    //% x4.shadow="bit_hex8" x5.shadow="bit_hex8" x6.shadow="bit_hex8" x7.shadow="bit_hex8"
+    // inlineInputMode=inline
+    export function prog1Zeichen(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse, pCharCode: number,
+        x0: number, x1: number, x2: number, x3: number, x4: number, x5: number, x6: number, x7: number) {
+        let bu = Buffer.create(10)
+        bu.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + pCharCode * 8)
+        bu.setUint8(2, x0)
+        bu.setUint8(3, x1)
+        bu.setUint8(4, x2)
+        bu.setUint8(5, x3)
+        bu.setUint8(6, x4)
+        bu.setUint8(7, x5)
+        bu.setUint8(8, x6)
+        bu.setUint8(9, x7)
+        oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+        control.waitMicros(50000) // 50ms
+    }
+   
+   
     const basicFontx20: string[] = [
         "\x00\x00\x00\x00\x00\x00\x00\x00", // " "
         "\x00\x00\x5F\x00\x00\x00\x00\x00", // "!"
@@ -232,6 +257,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         x800 = 0x800,
     }
 
+
     export enum eWriteStringReadString { readFile = 9, list = 14, } // Qwiic OpenLog Register Nummern
 
     //% group="EEPROM aus Datei auf Speicherkarte (1024 Byte=128 Zeichen) programmieren"
@@ -241,7 +267,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     //% pFilename.defl="BM505.BIN"
     //% pAnzahlBytes.defl=oledeeprom.ePage128.x800
     //% inlineInputMode=inline
-    export function burnFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
+    export function progFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
         pADDR_LOG: eADDR_LOG, pFilename: string, pAnzahlBytes: ePage128) {
 
         let filenameBuffer = Buffer.fromUTF8(pFilename)
@@ -350,14 +376,15 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     }
 
 
-    // ========== group="i2c Adressen"
+
+    // ========== group="i2c"
 
     //% blockId=oledeeprom_eADDR_EEPROM blockHidden=true
     //% group="i2c Adressen"
     //% block="%pADDR" weight=4
     export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
 
-    //% group="i2c Adressen"
+    //% group="i2c" advanced=true
     //% block="Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)" weight=2
     export function i2cError() { return oledeeprom_i2cWriteBufferError }
     let oledeeprom_i2cWriteBufferError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
