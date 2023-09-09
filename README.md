@@ -70,7 +70,7 @@ belegt werden können. Die bekannten Umlaute und Sonderzeichen ÄÖÜäöüß€
 
 #### 2. EEPROM aus Datei auf Speicherkarte programmieren
 
-Wie bekommt man einen großen Zeichensatz (oder ein Bild) auf den EEPROM? Natürlich von der Speicherkarte!
+Wie kommt ein großer Zeichensatz (oder ein Bild) auf den EEPROM? Natürlich von der Speicherkarte!
 Dazu muss der EEPROM und Qwiic OpenLog an i2c angeschlossen sein. Auf die Speicherkarte ist die (Binär-) Datei
 zu kopieren. Hier ist der [Zeichensatz vom Z 9001 (2048 Byte)](BM505.BIN). Die Zeichen sind 1/4 gedreht und werden 
 auf dem Display im Hochformat 8 Zeilen x 16 Zeichen richtig angezeigt. Die Zeichen-Codes 0x80-0xFF sind mit
