@@ -13,6 +13,8 @@
 
 ### Calliope Erweiterung für die i2c Module:
 
+* [Qwiic Cable - Grove Adapter](https://www.sparkfun.com/products/15109)
+* [Qwiic Cable Kit](https://www.sparkfun.com/products/15081)
 * [SparkFun Qwiic EEPROM Breakout - 512Kbit](https://www.sparkfun.com/products/18355)
 
 ![](https://cdn.sparkfun.com//assets/parts/1/7/7/0/1/18355-SparkFun_Qwiic_EEPROM_Breakout_-_512Kbit-01.jpg)
