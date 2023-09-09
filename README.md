@@ -3,8 +3,11 @@
 
 ### Calliope Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays':
 
-##### OLED neu gedacht - 2 Displays gleichzeitig (2x16x8=265 Zeichen) - EEPROM - 1 Stecker - i2c-Bus
-##### Querformat 16x8 - Hochformat 8x16 - mehrere Zeichensätze je 256 Zeichen - Bilder im EEPROM
+> OLED neu gedacht - 2 Displays gleichzeitig (2x16x8=265 Zeichen) - EEPROM - 1 Stecker - i2c-Bus
+
+> Querformat 16x8 - Hochformat 8x16 - mehrere Zeichensätze je 256 Zeichen - Bilder im EEPROM
+
+> funktioniert mit jeder (Speicher-) Konfiguration und Version (ab 1.3) von Calliope ohne Einschränkungen
 
 * [SparkFun Qwiic EEPROM Breakout - 512Kbit](https://www.sparkfun.com/products/18355)
 
