@@ -86,7 +86,8 @@ Der Block gibt false zurück, wenn die Datei nicht auf der Speicherkarte ist ode
 #### 3. EEPROM 1 Zeichen (8 Byte) programmieren
 
 Schließlich kann ein eigenes Zeichen aus 8 Byte für einen bestimmten Zeichencode programmiert werden.
-Weil es ein EEPROM ist, kann es auch wieder überschrieben werden, bis es das richtige Bild ergibt.
+Weil es ein EEPROM ist, kann es wieder überschrieben werden, bis es das richtige Bild ergibt.
+Damit können auch alle vorhandenen Zeichen repariert (oder zerstört) werden.
 
 ![](blocks-advanced.png)
 
