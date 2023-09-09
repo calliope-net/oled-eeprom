@@ -1,7 +1,7 @@
 
 > Diese Seite bei [https://calliope-net.github.io/oled-eeprom/](https://calliope-net.github.io/oled-eeprom/) öffnen.
 
-### Calliope Erweiterung 'EEPROM Programmierung für OLED Displays':
+### Calliope Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays':
 
 * [SparkFun Qwiic EEPROM Breakout - 512Kbit](https://www.sparkfun.com/products/18355)
 
@@ -24,7 +24,12 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 
 ![](blocks.png)
 
-### Beschreibung der Erweiterung 'EEPROM Programmierung für OLED Displays'
+### Beschreibung der Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays'
+
+> Die Erweiterung **calliope-net/bit** wird automatisch mit geladen.
+
+> Wenn der EEPROM einmal programmiert ist, kann diese Erweiterung entfernt werden.
+> Das OLED Display benötigt nur den programmierten EEPROM.
 
 *
 
