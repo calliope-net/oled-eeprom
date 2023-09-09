@@ -26,6 +26,7 @@ Dieses Repository kann als **Erweiterung** in MakeCode hinzugefügt werden.
 * jetzt hat die Liste den neuen Eintrag **OLED EEPROM** bekommen
 
 ![](blocks.png)
+![](blocks-advanced.png)
 
 ### Beschreibung der Erweiterung 'EEPROM Programmierung Zeichensatz für OLED Displays'
 
