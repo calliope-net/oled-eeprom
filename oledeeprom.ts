@@ -1,7 +1,7 @@
 
 //% color=#0000BF icon="\uf108" block="OLED EEPROM" weight=20
 namespace oledeeprom
-/* 230908 https://github.com/calliope-net/oled-eeprom
+/* 230909 https://github.com/calliope-net/oled-eeprom
 Erweiterung zum Programmieren des EEPROM für:
 https://github.com/calliope-net/oled-16x8
 Diese Erweiterung kann gelöscht werden, wenn der EEPROM einmal programmiert ist.
@@ -245,53 +245,18 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
 
 
-    export enum ePage128 {
-        //% block="128"
-        x080 = 0x080,
-        //% block="256"
-        x100 = 0x100,
-        //% block="384"
-        x180 = 0x180,
-        //% block="512"
-        x200 = 0x200,
-        //% block="640"
-        x280 = 0x280,
-        //% block="768"
-        x300 = 0x300,
-        //% block="896"
-        x380 = 0x380,
-        //% block="1024"
-        x400 = 0x400,
-        //% block="1152"
-        x480 = 0x480,
-        //% block="1280"
-        x500 = 0x500,
-        //% block="1408"
-        x580 = 0x580,
-        //% block="1536"
-        x600 = 0x600,
-        //% block="1664"
-        x680 = 0x680,
-        //% block="1792"
-        x700 = 0x700,
-        //% block="1920"
-        x780 = 0x780,
-        //% block="2048"
-        x800 = 0x800,
-    }
+    // ========== group="EEPROM aus Datei auf Speicherkarte programmieren"
 
+    export enum eQwiicOpenlogRegister { readFile = 9, list = 14, fileSize = 13 } // Qwiic OpenLog Register Nummern
 
-    export enum eWriteStringReadString { readFile = 9, list = 14, } // Qwiic OpenLog Register Nummern
-
-    //% group="EEPROM aus Datei auf Speicherkarte (1024 Byte=128 Zeichen) programmieren"
-    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus Datei i2c %pADDR_LOG %pFilename %pAnzahlBytes Byte programmieren"
+    //% group="EEPROM aus Datei auf Speicherkarte programmieren"
+    //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus Datei i2c %pADDR_LOG %pFilename programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
     //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F000
     //% pFilename.defl="BM505.BIN"
-    //% pAnzahlBytes.defl=oledeeprom.ePage128.x800
     //% inlineInputMode=inline
     export function progFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
-        pADDR_LOG: eADDR_LOG, pFilename: string, pAnzahlBytes: ePage128) {
+        pADDR_LOG: eADDR_LOG, pFilename: string) {//, pAnzahlBytes: ePage128
 
         let filenameBuffer = Buffer.fromUTF8(pFilename)
         let logBuffer = Buffer.create(1 + filenameBuffer.length)
@@ -300,7 +265,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         logBuffer.write(1, filenameBuffer)
 
         // mit DIR feststellen, ob Datei vorhanden ist
-        logBuffer.setUint8(0, eWriteStringReadString.list) // LIST command
+        logBuffer.setUint8(0, eQwiicOpenlogRegister.list) // LIST command
         oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
         control.waitMicros(50000) // 50ms
 
@@ -308,6 +273,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         filenameBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
         control.waitMicros(50000) // 50ms
         if (filenameBuffer.toString().substr(0, pFilename.length) != pFilename) {
+            basic.showString(pFilename)
             /* 
             oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, 0, 0, 15, oledssd1315.eAlign.left, pFilename)
             oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, 1, 0, 15, oledssd1315.eAlign.left, filenameBuffer.toString())
@@ -315,58 +281,71 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
             return false // file not found
         } else {
 
-            logBuffer.setUint8(0, eWriteStringReadString.readFile) // READ command
-            // filename steht ab offset=1 schon im logBuffer
-
-            // Dateiname senden, open read
+            // Größe der Datei in Bytes ermitteln
+            logBuffer.setUint8(0, eQwiicOpenlogRegister.fileSize) // SIZE command
             oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
             control.waitMicros(50000) // 50ms
+            let fileSize = pins.i2cReadBuffer(pADDR_LOG, 4).getNumber(NumberFormat.Int32BE, 0)
 
-            let eepromBuffer = Buffer.create(130)
-            for (let page = 0; page < pAnzahlBytes / 128; page++) { // (let page = 0; page < pAnzahlPages128; page++)
+            if (!(fileSize > 0 && fileSize <= 2048)) {
+                basic.showNumber(fileSize)
+                //oledssd1315.writeText16x8(oledssd1315.eADDR.OLED_16x8_x3D, 0, 0, 15, oledssd1315.eAlign.links, fileSize)
+                return false
+            } else {
 
-                // 128 Byte von Speicherkarte lesen als 4 * 32 Byte
-                // Qwiic OpenLog überträgt nur 32 Byte in einem Buffer
-                // EEPROM kann (2 Byte Adresse) + 128 Byte in einem Buffer schreiben
-                logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32) // 128
-                // 32 Byte von einem Buffer in den anderen füllen
-                eepromBuffer.write(2, logBuffer)
-                control.waitMicros(5000) // 5ms
+                // Datei lesen
+                logBuffer.setUint8(0, eQwiicOpenlogRegister.readFile) // READ command
+                // filename steht ab offset=1 schon im logBuffer
 
-                logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
-                eepromBuffer.write(34, logBuffer)
-                control.waitMicros(5000) // 5ms
-
-                logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
-                eepromBuffer.write(66, logBuffer)
-                control.waitMicros(5000) // 5ms
-
-                logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
-                eepromBuffer.write(98, logBuffer)
-                control.waitMicros(5000) // 5ms
-
-                // EEPROM Buffer 2 Byte startAdrEEPROM
-                eepromBuffer.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + page * 128)//pageEEPROM * 128 + page * 128)
-                /* 
-                if (page >= 0 && page <= 7) {
-                    oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, page, 0, 7, oledssd1315.eAlign.left,
-                        eepromBuffer.slice(0, 6).toHex() //+ " " + eepromBuffer.slice(0, 2).toHex()
-                    )
-
-                } else if (page >= 8 && page <= 15) {
-                    oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, page - 8, 8, 15, oledssd1315.eAlign.left,
-                        eepromBuffer.slice(0, 6).toHex() //+ eepromBuffer.slice(0, 2).toHex()
-                    )
-                }
-                */
-                // 2+128 Byte auf EEPROM brennen (1 Page)
-                oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, eepromBuffer)
+                // Dateiname senden, open read
+                oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
                 control.waitMicros(50000) // 50ms
 
-            }
-            return true
-        }
+                let eepromBuffer = Buffer.create(130)
+                for (let page = 0; page < fileSize / 128; page++) { // (let page = 0; page < pAnzahlPages128; page++)
 
+                    // 128 Byte von Speicherkarte lesen als 4 * 32 Byte
+                    // Qwiic OpenLog überträgt nur 32 Byte in einem Buffer
+                    // EEPROM kann (2 Byte Adresse) + 128 Byte in einem Buffer schreiben
+                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32) // 128
+                    // 32 Byte von einem Buffer in den anderen füllen
+                    eepromBuffer.write(2, logBuffer)
+                    control.waitMicros(5000) // 5ms
+
+                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    eepromBuffer.write(34, logBuffer)
+                    control.waitMicros(5000) // 5ms
+
+                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    eepromBuffer.write(66, logBuffer)
+                    control.waitMicros(5000) // 5ms
+
+                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    eepromBuffer.write(98, logBuffer)
+                    control.waitMicros(5000) // 5ms
+
+                    // EEPROM Buffer 2 Byte startAdrEEPROM
+                    eepromBuffer.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + page * 128)//pageEEPROM * 128 + page * 128)
+                    /* 
+                    if (page >= 0 && page <= 7) {
+                        oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, page, 0, 7, oledssd1315.eAlign.left,
+                            eepromBuffer.slice(0, 6).toHex() //+ " " + eepromBuffer.slice(0, 2).toHex()
+                        )
+    
+                    } else if (page >= 8 && page <= 15) {
+                        oledssd1315.writeText(oledssd1315.eADDR.OLED_16x8_x3D, page - 8, 8, 15, oledssd1315.eAlign.left,
+                            eepromBuffer.slice(0, 6).toHex() //+ eepromBuffer.slice(0, 2).toHex()
+                        )
+                    }
+                    */
+                    // 2+128 Byte auf EEPROM brennen (1 Page)
+                    oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, eepromBuffer)
+                    control.waitMicros(50000) // 50ms
+
+                }
+                return true
+            }
+        }
     }
 
 

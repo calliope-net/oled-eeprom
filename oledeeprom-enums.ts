@@ -85,15 +85,38 @@ namespace oledeeprom_enums {
         x70_x7F
     }
 
-    /*  let charCodeArray: string[] = []
-           switch (pCharCodeArray) {
-               case eCharCodeArray.x00_x0F: { charCodeArray = extendedCharacters; break; }
-               case eCharCodeArray.x20_x2F: { charCodeArray = basicFontx20; break; } // 16 string-Elemente je 8 Byte = 128
-               case eCharCodeArray.x30_x3F: { charCodeArray = basicFontx30; break; }
-               case eCharCodeArray.x40_x4F: { charCodeArray = basicFontx40; break; }
-               case eCharCodeArray.x50_x5F: { charCodeArray = basicFontx50; break; }
-               case eCharCodeArray.x60_x6F: { charCodeArray = basicFontx60; break; }
-               case eCharCodeArray.x70_x7F: { charCodeArray = basicFontx70; break; }
-           } */
-
+    export enum ePage128 {
+        //% block="128"
+        x080 = 0x080,
+        //% block="256"
+        x100 = 0x100,
+        //% block="384"
+        x180 = 0x180,
+        //% block="512"
+        x200 = 0x200,
+        //% block="640"
+        x280 = 0x280,
+        //% block="768"
+        x300 = 0x300,
+        //% block="896"
+        x380 = 0x380,
+        //% block="1024 (128 Zeichen)"
+        x400 = 0x400,
+        //% block="1152"
+        x480 = 0x480,
+        //% block="1280"
+        x500 = 0x500,
+        //% block="1408"
+        x580 = 0x580,
+        //% block="1536"
+        x600 = 0x600,
+        //% block="1664"
+        x680 = 0x680,
+        //% block="1792"
+        x700 = 0x700,
+        //% block="1920"
+        x780 = 0x780,
+        //% block="2048 (256 Zeichen)"
+        x800 = 0x800
+    }
 }
