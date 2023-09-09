@@ -51,7 +51,7 @@ Für 1 Zeichen werden 8 Byte im Zeichengenerator belegt. Für 128 ASCII Zeichen 
 Mit einem Zeichencode von 8 Bit sind aber 256 Zeichen möglich. Die Codierungen zwischen 128 und 255 werden 
 z.B. für Umlaute und Sonderzeichen benutzt. Für 256 Zeichen hat der Zeichengenerator eine Größe von 2048 Byte = 2KB.
 
-Die Datenmenge für 96 ASCCI-Zeichen lässt sich zwar im Programmcode unterbringen, aber der Platz ist bei Calliope begrenzt.
+Die Datenmenge für 96 ASCII-Zeichen lässt sich zwar im Programmcode unterbringen, aber der Platz ist bei Calliope begrenzt.
 Calliope ist abgestürzt, wenn Bluetooth aktiviert war. Mit dem EEPROM wird kein Speicherplatz vom Calliope mehr 
 belegt, weil die 8 Byte für jedes Zeichen direkt aus dem EEPROM gelesen werden.
 
