@@ -88,6 +88,8 @@ Der Block gibt false zurück, wenn die Datei nicht auf der Speicherkarte ist ode
 Schließlich kann ein eigenes Zeichen aus 8 Byte für einen bestimmten Zeichencode programmiert werden.
 Weil es ein EEPROM ist, kann es wieder überschrieben werden, bis es das richtige Bild ergibt.
 Damit können auch alle vorhandenen Zeichen repariert (oder zerstört) werden.
+Das wäre ein Grund, die Erweiterung **calliope-net/oled-eeprom** nach Gebrauch zu entfernen.
+(JavaScript Ansicht - unter dem Simulator Explorer - oled-eeprom - Mülleimer)
 
 ![](blocks-advanced.png)
 
