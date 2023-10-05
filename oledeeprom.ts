@@ -81,6 +81,9 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     // x0.shadow="bit_hex8" x1.shadow="bit_hex8" x2.shadow="bit_hex8" x3.shadow="bit_hex8"
     // x4.shadow="bit_hex8" x5.shadow="bit_hex8" x6.shadow="bit_hex8" x7.shadow="bit_hex8"
     // inlineInputMode=inline
+    //% pCharCode.min=0 pCharCode.max=255
+    //% x0.min=0 x0.max=255 x1.min=0 x1.max=255 x2.min=0 x2.max=255 x3.min=0 x3.max=255
+    //% x4.min=0 x4.max=255 x5.min=0 x5.max=255 x6.min=0 x6.max=255 x7.min=0 x7.max=255
     export function prog1Zeichen(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse, pCharCode: number,
         x0: number, x1: number, x2: number, x3: number, x4: number, x5: number, x6: number, x7: number) {
         let bu = Buffer.create(10)
@@ -382,11 +385,11 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     // ========== group="i2c"
 
     //% blockId=oledeeprom_eADDR_EEPROM
-    //% group="i2c Adressen"
+    //% group="i2c Adressen" advanced=true
     //% block="%pADDR" weight=4
     export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
 
-    //% group="i2c Adressen"
+    //% group="i2c Adressen" advanced=true
     //% block="i2c Fehlercode" weight=2
     export function i2cError() { return oledeeprom_i2cWriteBufferError }
     let oledeeprom_i2cWriteBufferError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
