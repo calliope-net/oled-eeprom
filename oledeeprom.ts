@@ -16,8 +16,8 @@ https://www.sparkfun.com/products/15164
 
 OLED Display neu programmiert von Lutz Elßner im September 2023
 */ {
-    export enum eADDR_EEPROM { EEPROM = 0x50 }
-    export enum eADDR_LOG { LOG_Qwiic = 0x2A, LOG_Qwiic_x29 = 0x29 }
+    export enum eADDR_EEPROM { EEPROM_x50 = 0x50 }
+    export enum eADDR_LOG { LOG_x2A = 0x2A, LOG_x29 = 0x29 }
 
     export enum eEEPROM_Startadresse { F800 = 0xF800, FC00 = 0xFC00, F000 = 0xF000, F400 = 0xF400 }
 
@@ -77,9 +77,9 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichencode | %pCharCode 8 Byte | %x0 %x1 %x2 %x3 %x4 %x5 %x6 %x7 programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
     //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F800
-    //% pCharCode.shadow="bit_hex8"
-    //% x0.shadow="bit_hex8" x1.shadow="bit_hex8" x2.shadow="bit_hex8" x3.shadow="bit_hex8"
-    //% x4.shadow="bit_hex8" x5.shadow="bit_hex8" x6.shadow="bit_hex8" x7.shadow="bit_hex8"
+    // pCharCode.shadow="bit_hex8"
+    // x0.shadow="bit_hex8" x1.shadow="bit_hex8" x2.shadow="bit_hex8" x3.shadow="bit_hex8"
+    // x4.shadow="bit_hex8" x5.shadow="bit_hex8" x6.shadow="bit_hex8" x7.shadow="bit_hex8"
     // inlineInputMode=inline
     export function prog1Zeichen(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse, pCharCode: number,
         x0: number, x1: number, x2: number, x3: number, x4: number, x5: number, x6: number, x7: number) {
@@ -381,13 +381,13 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
     // ========== group="i2c"
 
-    //% blockId=oledeeprom_eADDR_EEPROM blockHidden=true
+    //% blockId=oledeeprom_eADDR_EEPROM
     //% group="i2c Adressen"
     //% block="%pADDR" weight=4
     export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
 
-    //% group="i2c" advanced=true
-    //% block="Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)" weight=2
+    //% group="i2c Adressen"
+    //% block="i2c Fehlercode" weight=2
     export function i2cError() { return oledeeprom_i2cWriteBufferError }
     let oledeeprom_i2cWriteBufferError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
 
