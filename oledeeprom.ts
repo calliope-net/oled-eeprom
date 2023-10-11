@@ -1,7 +1,7 @@
 
 //% color=#0000BF icon="\uf108" block="OLED EEPROM" weight=20
 namespace oledeeprom
-/* 230909 https://github.com/calliope-net/oled-eeprom
+/* 230909 231011 https://github.com/calliope-net/oled-eeprom
 Erweiterung zum Programmieren des EEPROM für:
 https://github.com/calliope-net/oled-16x8
 Diese Erweiterung kann gelöscht werden, wenn der EEPROM einmal programmiert ist.
@@ -18,10 +18,21 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 */ {
     export enum eADDR_EEPROM { EEPROM_x50 = 0x50 }
     export enum eADDR_LOG { LOG_x2A = 0x2A, LOG_x29 = 0x29 }
+    let n_i2cCheck: boolean = false // i2c-Check
+    let n_i2cError_EEPROM: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
+    let n_i2cError_LOG: number = 0
 
     export enum eEEPROM_Startadresse { F800 = 0xF800, FC00 = 0xFC00, F000 = 0xF000, F400 = 0xF400 }
 
 
+    //% group="beim Start"
+    //% block="i2c-Check %ck"
+    //% ck.shadow="toggleOnOff" ck.defl=1
+    export function beimStart(ck: boolean) {
+        n_i2cCheck = ck
+        n_i2cError_EEPROM = 0 // Reset Fehlercode
+        n_i2cError_LOG = 0
+    }
 
     // ========== group="EEPROM aus Char-Array im Code (7 * 128 Byte/16 Zeichen) programmieren"
 
@@ -68,7 +79,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
                     bu.setUint8(2 + i * 8 + j, pCharCodeArray[i].charCodeAt(j))
                 } */
             }
-            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+            i2cWriteBuffer_EEPROM(pADDR_EEPROM, bu)
             control.waitMicros(50000) // 50ms
         }
     }
@@ -96,7 +107,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         bu.setUint8(7, x5)
         bu.setUint8(8, x6)
         bu.setUint8(9, x7)
-        oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+        i2cWriteBuffer_EEPROM(pADDR_EEPROM, bu)
         control.waitMicros(50000) // 50ms
     }
 
@@ -106,7 +117,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
             let bu = Buffer.create(10)
             bu.setNumber(NumberFormat.UInt16BE, 0, pEEPROM_Startadresse + (pChar.charCodeAt(0) & 0xFF) * 8)
             bu.write(2, pBuffer)
-            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, bu)
+            i2cWriteBuffer_EEPROM(pADDR_EEPROM, bu)
             control.waitMicros(50000) // 50ms
         }
     }
@@ -255,11 +266,12 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     //% group="EEPROM aus Datei auf Speicherkarte programmieren"
     //% block="i2c %pADDR_EEPROM ab %pEEPROM_Startadresse Zeichensatz aus Datei i2c %pADDR_LOG %pFilename programmieren"
     //% pADDR_EEPROM.shadow="oledeeprom_eADDR_EEPROM"
+    //% pADDR_LOG.shadow="oledeeprom_eADDR_LOG"
     //% pEEPROM_Startadresse.defl=oledeeprom.eEEPROM_Startadresse.F000
     //% pFilename.defl="BM505.BIN"
     //% inlineInputMode=inline
     export function progFile(pADDR_EEPROM: number, pEEPROM_Startadresse: eEEPROM_Startadresse,
-        pADDR_LOG: eADDR_LOG, pFilename: string) {//, pAnzahlBytes: ePage128
+        pADDR_LOG: number, pFilename: string) {//, pAnzahlBytes: ePage128
 
         let filenameBuffer = Buffer.fromUTF8(pFilename)
         let logBuffer = Buffer.create(1 + filenameBuffer.length)
@@ -269,11 +281,11 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
         // mit DIR feststellen, ob Datei vorhanden ist
         logBuffer.setUint8(0, eQwiicOpenlogRegister.list) // LIST command
-        oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
+        i2cWriteBuffer_LOG(pADDR_LOG, logBuffer)
         control.waitMicros(50000) // 50ms
 
         //  ersten Dateiname lesen
-        filenameBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+        filenameBuffer = i2cReadBuffer_LOG(pADDR_LOG, 32)
         control.waitMicros(50000) // 50ms
         if (filenameBuffer.toString().substr(0, pFilename.length) != pFilename) {
             basic.showString(pFilename)
@@ -286,9 +298,9 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
 
             // Größe der Datei in Bytes ermitteln
             logBuffer.setUint8(0, eQwiicOpenlogRegister.fileSize) // SIZE command
-            oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
+            i2cWriteBuffer_LOG(pADDR_LOG, logBuffer)
             control.waitMicros(50000) // 50ms
-            let fileSize = pins.i2cReadBuffer(pADDR_LOG, 4).getNumber(NumberFormat.Int32BE, 0)
+            let fileSize = i2cReadBuffer_LOG(pADDR_LOG, 4).getNumber(NumberFormat.Int32BE, 0)
 
             if (!(fileSize > 0 && fileSize <= 2048)) {
                 basic.showNumber(fileSize)
@@ -301,7 +313,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
                 // filename steht ab offset=1 schon im logBuffer
 
                 // Dateiname senden, open read
-                oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_LOG, logBuffer)
+                i2cWriteBuffer_LOG(pADDR_LOG, logBuffer)
                 control.waitMicros(50000) // 50ms
 
                 let eepromBuffer = Buffer.create(130)
@@ -310,20 +322,20 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
                     // 128 Byte von Speicherkarte lesen als 4 * 32 Byte
                     // Qwiic OpenLog überträgt nur 32 Byte in einem Buffer
                     // EEPROM kann (2 Byte Adresse) + 128 Byte in einem Buffer schreiben
-                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32) // 128
+                    logBuffer = i2cReadBuffer_LOG(pADDR_LOG, 32) // 128
                     // 32 Byte von einem Buffer in den anderen füllen
                     eepromBuffer.write(2, logBuffer)
                     control.waitMicros(5000) // 5ms
 
-                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    logBuffer = i2cReadBuffer_LOG(pADDR_LOG, 32)
                     eepromBuffer.write(34, logBuffer)
                     control.waitMicros(5000) // 5ms
 
-                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    logBuffer = i2cReadBuffer_LOG(pADDR_LOG, 32)
                     eepromBuffer.write(66, logBuffer)
                     control.waitMicros(5000) // 5ms
 
-                    logBuffer = pins.i2cReadBuffer(pADDR_LOG, 32)
+                    logBuffer = i2cReadBuffer_LOG(pADDR_LOG, 32)
                     eepromBuffer.write(98, logBuffer)
                     control.waitMicros(5000) // 5ms
 
@@ -342,7 +354,7 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
                     }
                     */
                     // 2+128 Byte auf EEPROM brennen (1 Page)
-                    oledeeprom_i2cWriteBufferError = pins.i2cWriteBuffer(pADDR_EEPROM, eepromBuffer)
+                    i2cWriteBuffer_EEPROM(pADDR_EEPROM, eepromBuffer)
                     control.waitMicros(50000) // 50ms
 
                 }
@@ -390,8 +402,53 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
     export function oledeeprom_eADDR_EEPROM(pADDR: eADDR_EEPROM): number { return pADDR }
 
     //% group="i2c Adressen" advanced=true
-    //% block="i2c Fehlercode" weight=2
-    export function i2cError() { return oledeeprom_i2cWriteBufferError }
-    let oledeeprom_i2cWriteBufferError: number = 0 // Fehlercode vom letzten WriteBuffer (0 ist kein Fehler)
+    //% block="i2c Fehlercode EEPROM" weight=3
+    export function i2cError_EEPROM() { return n_i2cError_EEPROM }
+
+    //% blockId=oledeeprom_eADDR_LOG
+    //% group="i2c Adressen" advanced=true
+    //% block="%pADDR" weight=2
+    export function oledeeprom_eADDR_LOG(pADDR: eADDR_LOG): number { return pADDR }
+
+    //% group="i2c Adressen" advanced=true
+    //% block="i2c Fehlercode LOG" weight=1
+    export function i2cError_LOG() { return n_i2cError_LOG }
+
+
+    function i2cWriteBuffer_EEPROM(pADDR: number, buf: Buffer, repeat: boolean = false) {
+        if (n_i2cError_EEPROM == 0) { // vorher kein Fehler
+            n_i2cError_EEPROM = pins.i2cWriteBuffer(pADDR, buf, repeat)
+            if (n_i2cCheck && n_i2cError_EEPROM != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
+                basic.showString(Buffer.fromArray([pADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
+        } else if (!n_i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
+            n_i2cError_EEPROM = pins.i2cWriteBuffer(pADDR, buf, repeat)
+        //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
+    }
+
+    function i2cReadBuffer_EEPROM(pADDR: number, size: number, repeat: boolean = false): Buffer {
+        if (!n_i2cCheck || n_i2cError_EEPROM == 0)
+            return pins.i2cReadBuffer(pADDR, size, repeat)
+        else
+            return Buffer.create(size)
+
+    }
+
+    function i2cWriteBuffer_LOG(pADDR: number, buf: Buffer, repeat: boolean = false) {
+        if (n_i2cError_LOG == 0) { // vorher kein Fehler
+            n_i2cError_LOG = pins.i2cWriteBuffer(pADDR, buf, repeat)
+            if (n_i2cCheck && n_i2cError_LOG != 0)  // vorher kein Fehler, wenn (n_i2cCheck=true): beim 1. Fehler anzeigen
+                basic.showString(Buffer.fromArray([pADDR]).toHex()) // zeige fehlerhafte i2c-Adresse als HEX
+        } else if (!n_i2cCheck)  // vorher Fehler, aber ignorieren (n_i2cCheck=false): i2c weiter versuchen
+            n_i2cError_LOG = pins.i2cWriteBuffer(pADDR, buf, repeat)
+        //else { } // n_i2cCheck=true und n_i2cError != 0: weitere i2c Aufrufe blockieren
+    }
+
+    function i2cReadBuffer_LOG(pADDR: number, size: number, repeat: boolean = false): Buffer {
+        if (!n_i2cCheck || n_i2cError_LOG == 0)
+            return pins.i2cReadBuffer(pADDR, size, repeat)
+        else
+            return Buffer.create(size)
+    }
+
 
 } // oledeeprom.ts
