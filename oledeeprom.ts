@@ -122,8 +122,6 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         }
     }
 
-
-
     const basicFontx20: string[] = [
         "\x00\x00\x00\x00\x00\x00\x00\x00", // " "
         "\x00\x00\x5F\x00\x00\x00\x00\x00", // "!"
@@ -392,6 +390,29 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         return bu.slice(offset, 8)
     }
 
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char20" weight=6
+    export function array20(): string[] { return basicFontx20 }
+
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char30" weight=5
+    export function array30(): string[] { return basicFontx30 }
+
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char40" weight=4
+    export function array40(): string[] { return basicFontx40 }
+
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char50" weight=3
+    export function array50(): string[] { return basicFontx50 }
+
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char60" weight=2
+    export function array60(): string[] { return basicFontx60 }
+
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
+    //% block="char70" weight=1
+    export function array70(): string[] { return basicFontx70 }
 
 
     // ========== group="i2c"
