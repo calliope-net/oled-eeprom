@@ -390,28 +390,28 @@ OLED Display neu programmiert von Lutz Elßner im September 2023
         return bu.slice(offset, 8)
     }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char20" weight=6
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="20-2F" weight=6
     export function array20(): string[] { return basicFontx20 }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char30" weight=5
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="30-3F" weight=5
     export function array30(): string[] { return basicFontx30 }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char40" weight=4
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="40-4F" weight=4
     export function array40(): string[] { return basicFontx40 }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char50" weight=3
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="50-5F" weight=3
     export function array50(): string[] { return basicFontx50 }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char60" weight=2
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="60-6F" weight=2
     export function array60(): string[] { return basicFontx60 }
 
-    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" advanced=true
-    //% block="char70" weight=1
+    //% group="Zeichensatz als String-Arrays mit je 16 Elementen" subcategory="Arrays"
+    //% block="70-7F" weight=1
     export function array70(): string[] { return basicFontx70 }
 
 
